@@ -7,7 +7,12 @@ class ocf::node_exporter {
     content => template('ocf/environment.prom.erb'),
   }
 
+
   if $::lsbdistid != 'Raspbian' {
-    include prometheus::node_exporter
+    $whitelist = '';
+    class { 'prometheus::node_exporter':
+      collectors_enable => ['systemd'],
+      extra_options     => '--collector.systemd.unit-whitelist ".+\.(service|timer)"',
+    }
   }
 }
