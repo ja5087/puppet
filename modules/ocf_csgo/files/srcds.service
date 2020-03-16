@@ -1,0 +1,16 @@
+[Description]
+Description=SRCDS - Source Dedicated Server
+After=network-online.target
+
+[Service]
+ExecStart=/opt/csgo/srcds/srcds_run -ip 0.0.0.0 -port 27015 -game csgo -console -usercon -tickrate 128 -maxplayers_override 16 -autoupdate -steam_dir /opt/csgo/bin -steamcmd_script /opt/csgo/etc/csgo-update.cmd
+ExecReload=/bin/kill -HUP $MAINPID
+SuccessExitStatus=15
+User=ocfcsgo
+Group=ocfcsgo
+Restart=always
+SyslogIdentifier=srcds
+WorkingDirectory=/opt/csgo/srcds/bin
+
+[Install]
+WantedBy=multi-user.target

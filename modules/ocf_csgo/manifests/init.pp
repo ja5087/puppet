@@ -2,6 +2,41 @@ class ocf_csgo {
   include ocf::apt::i386
   include ocf::firewall::allow_desktops
 
+  ocf::firewall::firewall46 {
+    '100 allow srcds':
+      opts => {
+        chain => 'PUPPET-INPUT',
+  proto       => ['tcp', 'udp'],
+  dport       => 27015,
+  action      => 'accept',
+      };
+
+    '100 allow SourceTV':
+      opts => {
+        chain => 'PUPPET-INPUT',
+  proto       => 'udp',
+  dport       => 27015,
+  action      => 'accept',
+      };
+
+    '100 allow srcds clientport':
+      opts => {
+        chain => 'PUPPET-INPUT',
+  proto       => 'udp',
+  dport       => 27005,
+  action      => 'accept',
+      };
+
+    '100 allow steam client':
+      opts => {
+        chain => 'PUPPET-OUTPUT',
+  proto       => 'udp',
+  dport       => 26900,
+  action      => 'accept',
+      };
+  }
+
+
   user { 'ocfcsgo':
     comment => 'Counter-Strike Server',
     home    => '/opt/csgo',
@@ -42,7 +77,13 @@ class ocf_csgo {
       command     => '/opt/csgo/bin/update-csgo',
       user        => ocfcsgo,
       refreshonly => true,
-      require     => [File['/opt/csgo/bin/update-csgo'], Package['lib32gcc1']];
+      require     => [File['/opt/csgo/bin/update-csgo'], Package['lib32gcc1']],
+      notify      => Ocf::Systemd::Service['srcds'];
+  }
+
+  ocf::systemd::service { 'srcds':
+    source  => 'puppet:///modules/ocf_csgo/srcds.service',
+    require => [File['/opt/csgo/bin']],
   }
 
   ocf::munin::plugin { 'csgo':
